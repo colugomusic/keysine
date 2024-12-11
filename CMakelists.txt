@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.20)
+project(keysine)
+
+include(CPM.cmake)
+
+CPMAddPackage(NAME bhas GITHUB_REPOSITORY colugomusic/bhas             GIT_TAG master         )
+CPMAddPackage(NAME ez   GITHUB_REPOSITORY colugomusic/ez               GIT_TAG master         )
+CPMAddPackage(NAME rwq  GITHUB_REPOSITORY cameron314/readerwriterqueue GIT_TAG 8e7627d        )
+
+CPMAddPackage(
+	NAME sdl
+	GITHUB_REPOSITORY libsdl-org/SDL
+	GIT_TAG release-2.30.10
+	OPTIONS
+		"SDL_AUDIO OFF"
+		"SDL_DIRECTX OFF"
+		"SDL_FILE OFF"
+		"SDL_FILESYSTEM OFF"
+		"SDL_HAPTIC OFF"
+		"SDL_HIDAPI OFF"
+		"SDL_JOYSTICK OFF"
+		"SDL_OPENGL OFF"
+		"SDL_OPENGLES OFF"
+		"SDL_RENDER OFF"
+		"SDL_RENDER_D3D OFF"
+		"SDL_SENSOR OFF"
+		"SDL_SHARED OFF"
+		"SDL_TEST OFF"
+		"SDL_VIRTUAL_JOYSTICK OFF"
+		"SDL_WASAPI OFF"
+		"SDL2_DISABLE_SDL2MAIN ON"
+)
+
+CPMAddPackage(
+	NAME immer
+	GITHUB_REPOSITORY arximboldi/immer
+	GIT_TAG v0.8.1
+	OPTIONS
+		"immer_BUILD_TESTS OFF"
+		"immer_BUILD_EXAMPLES OFF"
+		"immer_BUILD_DOCS OFF"
+		"immer_BUILD_EXTRAS OFF"
+)
+
+set(keysine-src-files
+	src/main.cpp
+)
+
+add_executable(keysine ${keysine-src-files})
+
+target_link_libraries(keysine PRIVATE
+	bhas::bhas
+	ez::ez
+	immer
+	readerwriterqueue
+	SDL2::SDL2-static
+)
+
+set_target_properties(keysine PROPERTIES
+	CXX_STANDARD 20
+)
+
+set(VS_STARTUP_PROJECT keysine)
