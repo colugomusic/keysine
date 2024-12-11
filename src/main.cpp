@@ -259,6 +259,9 @@ auto process_note(ez::audio_t, const note& note, uint64_t counter, bhas::sample_
 }
 
 auto audio_callback(bhas::input_buffer input, bhas::output_buffer output, bhas::frame_count frame_count, bhas::sample_rate sample_rate, bhas::output_latency output_latency, const bhas::time_info* time_info) -> bhas::callback_result {
+	// Note: I would usually be using a DSP library such as madronalib
+	// here but this project is not intended to teach anything about DSP.
+	// https://github.com/madronalabs/madronalib
 	static constexpr auto AMP = 0.333;
 	const auto m = mt::audio_model.read(ez::audio);
 	for (uint32_t j = 0; j < frame_count.value; ++j) {
