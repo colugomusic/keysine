@@ -53,12 +53,6 @@ struct audio_model {
 	immer::flex_vector<note> notes;
 };
 
-struct rng {
-	std::mt19937 gen;
-	std::uniform_real_distribution<double> real01{0.0, 1.0};
-	std::mutex mutex;
-};
-
 struct input {
 	struct note_off { key k; };
 	struct note_on { key k; };
@@ -158,7 +152,6 @@ namespace audio {
 // Stuff that will only be accessed by the main thread
 namespace main {
 	keysine::input input;
-	keysine::rng rng;
 	int64_t next_id = 1;
 	std::vector<pressed_key> pressed_keys;
 };
