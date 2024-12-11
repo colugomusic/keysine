@@ -2,7 +2,7 @@ This is a single-file C++20 audio application written for educational purposes w
 
 The code has been deliberately over-engineered to show what I think are many useful techniques for architecting very large and complex audio applications such as digital audio workstations, based on what I have learned so far working on Blockhead.
 
-Note that this is not a "very large and complex audio application", it is just a very small toy example, and therefore the techniques being used here are completely overkill for the end result. The only point of the project is to try to show off some fairly advanced techniques in as few lines of code as possible.
+Note that this is not a "very large and complex audio application", it is just a very small toy example, and therefore the techniques being used here are completely overkill for the end result. The only point of the project is to try to encapsulate some fairly advanced techniques in as few lines of code as possible.
 
 Libraries used:
 
