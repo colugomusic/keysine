@@ -229,8 +229,8 @@ auto process_note_release(ez::audio_t, const note& note, float sine, bhas::sampl
 }
 
 auto process_note_on(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& service = mt::note_services.at(note.service);
-	switch (service.stage) {
+	auto& s = mt::note_services.at(note.service);
+	switch (s.stage) {
 		case note_stage::attack:  { return process_note_attack(ez::audio, note, sine, sr); }
 		case note_stage::decay:   { return process_note_decay(ez::audio, note, sine, sr); }
 		case note_stage::sustain: { return process_note_sustain(ez::audio, note, sine, sr); }
@@ -240,11 +240,11 @@ auto process_note_on(ez::audio_t, const note& note, float sine, bhas::sample_rat
 }
 
 auto process_note_off(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& service = mt::note_services.at(note.service);
-	switch (service.stage) {
+	auto& s = mt::note_services.at(note.service);
+	switch (s.stage) {
 		case note_stage::attack:
 		case note_stage::decay:
-		case note_stage::sustain: { service.stage = note_stage::release; [[fallthrough]]; }
+		case note_stage::sustain: { s.stage = note_stage::release; [[fallthrough]]; }
 		case note_stage::release: { return process_note_release(ez::audio, note, sine, sr); }
 		default:                  { return 0.0f; }
 	}
