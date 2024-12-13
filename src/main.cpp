@@ -2,6 +2,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <bhas.h>
+#include <deque>
 #include <ez.hpp>
 #include <immer/flex_vector.hpp>
 #include <iostream>
@@ -87,14 +88,14 @@ struct note_info {
 };
 
 template <typename T>
-struct growing_pool {
-	auto acquire() -> size_t {
+struct stable_growing_pool {
+	auto acquire(ez::main_t) -> size_t {
 		return get_free_index();
 	}
-	auto release(size_t index) -> void {
+	auto release(ez::main_t, size_t index) -> void {
 		free_list_.push_back(index);
 	}
-	auto at(size_t index) -> T& {
+	auto at(ez::safe_t, size_t index) -> T& {
 		return items_.at(index);
 	}
 private:
@@ -108,7 +109,7 @@ private:
 		free_list_.pop_back();
 		return index;
 	}
-	std::vector<T> items_;
+	std::deque<T> items_;
 	std::vector<size_t> free_list_;
 };
 
@@ -161,7 +162,7 @@ namespace mt {
 	ez::sync<keysine::audio_model> audio_model;
 	keysine::response responder;
 	keysine::stream_info stream_info;
-	growing_pool<note_service> note_services;
+	stable_growing_pool<note_service> note_services;
 };
 
 auto report_(const bhas::error& item) -> void   { std::cout << "bhas error: " << item.value << std::endl; } 
@@ -193,7 +194,7 @@ auto send(ez::audio_t, response::var r) -> void {
 }
 
 auto process_note_attack(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& s = mt::note_services.at(note.service);
+	auto& s = mt::note_services.at(ez::audio, note.service);
 	s.energy += 1.0f / (sr.value * float(ATTACK_TIME.count()) / 1000.0f);
 	if (s.energy > 1.0f) {
 		s.energy = 1.0f;
@@ -203,7 +204,7 @@ auto process_note_attack(ez::audio_t, const note& note, float sine, bhas::sample
 }
 
 auto process_note_decay(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& s = mt::note_services.at(note.service);
+	auto& s = mt::note_services.at(ez::audio, note.service);
 	s.energy -= 1.0f / (sr.value * float(DECAY_TIME.count()) / 1000.0f);
 	if (s.energy < SUSTAIN_LEVEL) {
 		s.energy = SUSTAIN_LEVEL;
@@ -213,12 +214,12 @@ auto process_note_decay(ez::audio_t, const note& note, float sine, bhas::sample_
 }
 
 auto process_note_sustain(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& s = mt::note_services.at(note.service);
+	auto& s = mt::note_services.at(ez::audio, note.service);
 	return s.energy * sine;
 }
 
 auto process_note_release(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& s = mt::note_services.at(note.service);
+	auto& s = mt::note_services.at(ez::audio, note.service);
 	s.energy -= 1.0f / (sr.value * float(RELEASE_TIME.count()) / 1000.0f);
 	if (s.energy < 0.0f) {
 		s.energy = 0.0f;
@@ -229,7 +230,7 @@ auto process_note_release(ez::audio_t, const note& note, float sine, bhas::sampl
 }
 
 auto process_note_on(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& s = mt::note_services.at(note.service);
+	auto& s = mt::note_services.at(ez::audio, note.service);
 	switch (s.stage) {
 		case note_stage::attack:  { return process_note_attack(ez::audio, note, sine, sr); }
 		case note_stage::decay:   { return process_note_decay(ez::audio, note, sine, sr); }
@@ -240,7 +241,7 @@ auto process_note_on(ez::audio_t, const note& note, float sine, bhas::sample_rat
 }
 
 auto process_note_off(ez::audio_t, const note& note, float sine, bhas::sample_rate sr) -> float {
-	auto& s = mt::note_services.at(note.service);
+	auto& s = mt::note_services.at(ez::audio, note.service);
 	switch (s.stage) {
 		case note_stage::attack:
 		case note_stage::decay:
@@ -332,8 +333,8 @@ auto add_note(ez::main_t, audio_model&& a, int64_t note_id, key k) -> audio_mode
 	auto new_note = note{};
 	new_note.id      = note_id;
 	new_note.freq    = get_freq(k);
-	new_note.service = mt::note_services.acquire();
-	reset(&mt::note_services.at(new_note.service));
+	new_note.service = mt::note_services.acquire(ez::main);
+	reset(&mt::note_services.at(ez::main, new_note.service));
 	a.notes = a.notes.push_back(new_note);
 	return a;
 }
@@ -354,7 +355,7 @@ auto remove_note(ez::main_t, audio_model&& a, uint64_t id) -> audio_model {
 	auto pos = std::ranges::find_if(a.notes, match);
 	if (pos != a.notes.end()) {
 		const auto& note = *pos;
-		mt::note_services.release(note.service);
+		mt::note_services.release(ez::main, note.service);
 		a.notes = a.notes.erase(pos.index());
 	}
 	return a;
