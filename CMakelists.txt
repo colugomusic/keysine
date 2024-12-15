@@ -4,6 +4,7 @@ project(keysine)
 include(CPM.cmake)
 
 CPMAddPackage(NAME bhas GITHUB_REPOSITORY colugomusic/bhas             GIT_TAG master         )
+CPMAddPackage(NAME ent  GITHUB_REPOSITORY colugomusic/ent              GIT_TAG main           )
 CPMAddPackage(NAME ez   GITHUB_REPOSITORY colugomusic/ez               GIT_TAG master         )
 CPMAddPackage(NAME rwq  GITHUB_REPOSITORY cameron314/readerwriterqueue GIT_TAG 8e7627d        )
 
@@ -50,6 +51,7 @@ add_executable(keysine ${keysine-src-files})
 
 target_link_libraries(keysine PRIVATE
 	bhas::bhas
+	ent::ent
 	ez::ez
 	immer
 	readerwriterqueue
