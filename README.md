@@ -9,6 +9,7 @@ Libraries used:
 - [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake): CMake package management
 - [bhas](https://github.com/colugomusic/bhas): Just for starting and stopping audio streams.
 - [immer](https://github.com/arximboldi/immer): For representing project state as an immutable data structure.
+- [ent](https://github.com/colugomusic/ent): For managing a realtime-safe pool of reusable note entities.
 - [ez](https://github.com/colugomusic/ez): For synchronizing project state with the audio thread.
 - [readerwriterqueue](https://github.com/cameron314/readerwriterqueue): For one-way communication from the audio thread back to the main thread.
 - [SDL2](https://github.com/libsdl-org/SDL): Only for handling keyboard input.
